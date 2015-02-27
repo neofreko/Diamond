@@ -60,7 +60,9 @@ class FluentdHandler(Handler):
         self.queue_max_timestamp = int(time.time() + self.queue_max_interval)
         self.current_n_measurements = 0
 
-        sender.setup(self.config['prefix_tag'], host=self.config['host'], port=self.config['port'])
+        self.log.debug("Connecting to fluentd host %s" % (self.config['host']))
+
+        sender.setup(self.config['prefix_tag'], host=self.config['host'], port=int(self.config['port']))
 
         # If a user leaves off the ending comma, cast to a array for them
         include_filters = self.config['include_filters']
@@ -144,11 +146,11 @@ class FluentdHandler(Handler):
 
         while self.queue:
             item = self.queue.pop()
-            logging.debug(item)
             metric = item['metric']
             del item['metric']
             # send event to fluentd, with 'app.follow' tag
             event.Event(metric, item)
+            #self.log.debug("sending mtric %s" % (metric))
 
         self.queue_max_timestamp = int(time.time() + self.queue_max_interval)
         self.current_n_measurements = 0
